@@ -6,35 +6,38 @@
 % file='savedData\3LinkSwimmer_FatHead_EqSpacing_Spring_f150_A60_S01.mat';
 
 %% This block is used to find the initial frame, "startFrame"
-clearvars -except ff aa
-%ff=2;
-%clc
-file1='savedData/3LinkAmp_f03_SmallKData/3LinkSnake_2Spring_A';
-% file1='savedData\3LinkSwimmer_Symmetric_FullyActuated_f';
+% clearvars -except ff
+clearvars -except amp
+
+% ff=1;
+clc
+% 3LinkSnake_3Spring_A20_f01_012618.mat
+file1='savedData/3LinkSnake_2Spring_A';
 % file1='savedData\3LinkSwimmer_Symmetric_Spring_f';
 % file2='_A60_S01';
 % file2='_A60_S02';
-% file2='_A30_S02';
-
-numcycles = 4;
-
 file2='_f03';
 ext='.mat';
-file_middle=num2str(aa);
+
+ff=0.8;
 f=ff/10             % Use ff in an external for loop
-% file_middle='';
+
+file_middle=num2str(amp);
+
 % if(ff>=10)
 %     file_middle=num2str(f*10);
 % else if(ff>=1)
-%         file_middle=['0',num2str(f*10)];
+%         file_middle=['',num2str(f*10)];
 %     else
-%         file_middle=['00',num2str(f*10)];
+%         file_middle=['0',num2str(f*100)];
 %     end
 % end
+
 file=[file1,file_middle,file2,ext]
+% file = 'savedData/3LinkSnake_3Spring_A20_f10.mat';
 % return
 load(file);
-f=ff/10;
+
 %%
 startFrame=1;         % savedData includes this synced with experiment
 pool_axes=[0,232,0,118.7];
@@ -61,6 +64,14 @@ plot(b5(:,1),b5(:,2),'c')
 plot(b6(:,1),b6(:,2),'y')
 center=(b3+b4)/2;
 plot(center(:,1),center(:,2),'k');
+% WARNING: Axis values will need to change if lab frame coords change
+axis([0 231.7 0 135.3]);
+title('Marker Trajectories','Interpreter','latex','FontSize',20);
+xlabel('x (cm)','Interpreter','latex','FontSize',16);
+ylabel('y (cm)','Interpreter','latex','FontSize',16);
+grid on
+set(gca,'XTick',0:10:231.7);
+set(gca,'YTick',0:10:135.3);
 
 j=1;
 for i=1:42:length(b1),       % every second...
@@ -71,6 +82,18 @@ end
 plot(center_sample(:,1),center_sample(:,2),'*k')
 axis equal tight
 axis(pool_axes)
+
+% WARNING: Many of the values for resizing axes for display purposes will need to be
+% changed if the laboratory reference frame changes
+figure(20),clf
+plot(center(:,1),center(:,2),'k');
+axis([0 231.7 0 135.3]);
+title('Centroid Trajectory','Interpreter','latex','FontSize',20);
+xlabel('x (cm)','Interpreter','latex','FontSize',16);
+ylabel('y (cm)','Interpreter','latex','FontSize',16);
+grid on
+set(gca,'XTick',0:10:231.7);
+set(gca,'YTick',0:10:135.3);
 
 %%
 figure(10),clf
@@ -88,10 +111,8 @@ hold on
 grid on
 plot(phi_Body)
 plot(phi_Head-phi_Body)
-alpha1=phi_Head-phi_Body;
 plot(phi_Tail)
 plot(phi_Body-phi_Tail)
-alpha2=phi_Body-phi_Tail;
 legend('Head','Body','HB','Tail','TB')
 threshold=1*pi/180;
 plot([1,400],[threshold,threshold],'--k')
@@ -130,7 +151,9 @@ figure(12),clf
 plot(center(:,1),center(:,2))
 hold on
 plot(strobed_center(:,1),strobed_center(:,2),'*')
-title(['Center position sampled with f = ',num2str(f),' Hz'])
+title(['Center position sampled with f = ',num2str(f),' Hz'],'Interpreter','latex','FontSize',20);
+xlabel('x (cm)','Interpreter','latex','FontSize',16);
+ylabel('y (cm)','Interpreter','latex','FontSize',16);
 axis equal
 
 %% Plot Joint Angle, stroboscopically sampled every once per cycle
@@ -145,105 +168,38 @@ strobed_jointAngle1=interp1(t,jointAngle1,times);
 %     end
 % end
 figure(13),clf
-plot(t,jointAngle1)
+plot(t,jointAngle1*180/pi)
 hold on
 
-plot(times,strobed_jointAngle1,'*')
-title(['Control input sampled with f = ',num2str(f),' Hz'])
+plot(times,strobed_jointAngle1*180/pi,'*')
+title(['Control input sampled with f = ',num2str(f),' Hz'],'Interpreter','latex','FontSize',20);
+xlabel('t (s)','Interpreter','latex','FontSize',16);
+ylabel('Amplitude (degrees)','Interpreter','latex','FontSize',16);
 % axis equal
-
-%% Plot trajectories and joint angles...
-figure(14),clf
-subplot(221)
-plot(center(:,1))
-hold on
-plot(center(:,2))
-legend('x','y')
-grid
-subplot(223)
-plot(phi_Body*180/pi)
-legend('\theta')
-subplot(122)
-plot(alpha1)
-hold on
-plot(alpha2)
-legend('\alpha_1','\alpha_2')
-%%
-figure(15),clf
-for cycle=1:5,
-    
-% We need to change the way we define "first" and "last" since it's possible we
-% may not have access to full cycles due to a slightly shortened experiment.
-
-first=1+42/f*(cycle-1);
-last=first+42/f;
-% plot(alpha1,alpha2)
-
-% Standardizd size of plot
-maxalpha1=max(alpha1)*180/pi;
-maxalpha2=max(alpha2)*180/pi;
-
-%plot(alpha1(first:last),alpha2(first:last))
-plot(alpha1*180/pi,alpha2*180/pi,'b')
-axis([-(maxalpha1+10) maxalpha1+10 -(maxalpha1+10) maxalpha1+10])
-axis square
-%title('Phase Space','Interpreter','latex','FontSize',18)
-xlabel('$$\alpha_1$$ (degrees)','Interpreter','latex','FontSize',18)
-ylabel('$$\alpha_2$$ (degrees)','Interpreter','latex','FontSize',18)
-
-% Save Matlab figure and .png file for convenience
-savefig([file1,file_middle,file2,'phasespace.fig'])
-saveas(gcf,[file1,file_middle,file2,'phasespace'],'pdf')
-
-hold on
-
-end
-%legend('1','2','3','4','5')
-% Need to change this to time axis
-figure(16),clf
-plot(t,alpha1*180/pi,'b')
-hold on
-plot(t,alpha2*180/pi,'r')
-%title('Joint Angles','Interpreter','latex','FontSize',18)
-axis([0 (numcycles+1)/f -(maxalpha1+10) maxalpha1+10])
-xlabel('Time (seconds)','Interpreter','latex','FontSize',18)
-ylabel('Amplitude (degrees)','Interpreter','latex','FontSize',18)
-legend('$$\alpha_1$$','$$\alpha_2$$')
-
-% Save Matlab figure and .png file for convenience
-savefig([file1,file_middle,file2,'jointangles.fig'])
-saveas(gcf,[file1,file_middle,file2,'jointangles.pdf'])
-
-% Rodrigo's rotation of coordinates
-dt=1/fps;
-t=0:dt:dt*(length(center)-1);
-fontSize=18;
-
-% First move the initial position to the origin
-points1=center;
-points1=points1-[ones(length(points1),1)*center(1,1),ones(length(points1),1)*center(1,2)];
-
-theta=atan2(b3(:,2)-b4(:,2),b3(:,1)-b4(:,1));
-
-% Now, correct initial heading angle, so everything has theta = 0
-R1=[cos(-theta(1)),-sin(-theta(1)); sin(-theta(1)),cos(-theta(1))];
-
-xy=(R1*points1')';
-
-figure(17),clf
-plot(xy(:,1),xy(:,2),'k')
-set(gca,'fontsize',fontSize)
-grid
-axis equal
-xlabel('x (cm)')
-ylabel('y (cm)')
 pause(1.5)
 
-% Save Matlab figure and .png file for convenience
-savefig([file1,file_middle,file2,'rotatedtraj.fig'])
-saveas(gcf,[file1,file_middle,file2,'rotatedtraj.pdf'])
-%% Save x,y,theta,alpha1,alpha2,phi_Head,phi_Tail...
-save(file,'-append','center','phi_Body','phi_Head','phi_Tail','alpha1','alpha2','b1','b2','b3','b4','b5','b6')
+%% Plot joint angles in a separate figure
+jointAngle2 = phi_Body-phi_Tail;
+
+figure(14)
+plot(t,jointAngle1*180/pi);
+hold on
+plot(t,jointAngle2*180/pi);
+legend('Head Angle','Tail Angle');
+title('Joint Angles','Interpreter','latex','FontSize',20);
+xlabel('t (s)','Interpreter','latex','FontSize',16);
+ylabel('Amplitude (degrees)','Interpreter','latex','FontSize',16);
+axis([0 15 -amp-10 amp+10]);
+
+figure(15),clf
+%plot(jointAngle1*180/pi,jointAngle2*180/pi);
+%plot(jointAngle1(100:end)*180/pi,jointAngle2(100:end)*180/pi)
+plot(jointAngle1(250:540)*180/pi,jointAngle2(250:540)*180/pi)
+title('Phase Space Plot','Interpreter','latex','FontSize',20)
+xlabel('$$\alpha_1$$ (deg)','Interpreter','latex','FontSize',16);
+ylabel('$$\alpha_2$$ (deg)','Interpreter','latex','FontSize',16);
+pbaspect([1 1 1]);
+grid on
 
 %% To find the first frame "startFrame"...
 return

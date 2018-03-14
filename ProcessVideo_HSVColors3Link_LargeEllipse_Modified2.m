@@ -1,10 +1,3 @@
-% 2/21/18
-% Modified to accommodate 4 links...
-%
-% 1/29/18
-% Modified the way the mask is selected (ROI) so that it doesn't include
-% the 4 reference markers. Works with the 3 link kinematic snake
-%
 % *************************************************************************
 % ******************************* Mod 1 ***********************************
 % 4/19/17
@@ -17,7 +10,6 @@
 % will automatically find 4 markers (on the fish), and detecect the
 % appropirate orientation, first maker will be on the head, second on the
 % body, third on body and fourth on tail. The way we are able to do this is
-
 % by looking at the first BW frame obtained after processing the color of
 % the markers, then we find the pairwise distance between all markers and
 % select the four markers that meet the dimensions of the actual 3LinkFish.
@@ -37,16 +29,16 @@
 % so I can define an area that I have to focus on for the coming frame...
 
 close all
-clearvars -except ff        % ff is part of an external for loop
+
+% clearvars -except ff        % ff is part of an external for loop
+clearvars -except amp
 clc  % Comment to use crop and ROI from WorkSpace memory %********%
 % rect=round(rect)
 % figure(1),clf
 %% Load Video, take first frame
 
-% folder='Videos_Spring\';
 folder='Videos_Spring/';
-file1='3LinkSnake_2Spring_A55_f';
-% file1='3LinkSwimmer_Symmetric_FullyActuated_f';
+file1='3LinkSnake_2Spring_A';
 % file1='3LinkSwimmer_Symmetric_Spring_f';
 % file1='3LinkSwimmer_FatHead_Spring_f';
 % file1='3LinkSwimmer_FatHead_EqSpacing_Spring_f';
@@ -57,22 +49,29 @@ file1='3LinkSnake_2Spring_A55_f';
 % file1='testAngles3';
 % file2='_A60_S01';
 % file2='_A30_S02';
-% file2='_Test05';
-% file2='_A60_S03';
-file2='';
+% % file2='_A60_S03';
+
+file2='_f03';
 ext='.mp4';
 % f=0.1;       % frequency of actuator
+ff=0.3;
 f=ff/10             % Use ff in an external for loop
-file_middle='';
+% file_middle='';
+
 if(ff>=10)
-    file_middle=num2str(f*10);
+    file_middle=num2str(f*10); % Originially f*100
 else if(ff>=1)
-        file_middle=['0',num2str(f*10)];
+        file_middle=['',num2str(f*10)];
     else
-        file_middle=['00',num2str(f*10)];
+        %file_middle=['00',num2str(f*10)]; % Originally '00'
+        file_middle=['0',num2str(f*100)]
     end
 end
+
+file_middle=num2str(amp);
 file=[folder,file1,file_middle,file2,ext]
+%file='Videos_Spring/3LinkSnake_1Spring_A20_f10_Test05.mp4';
+
 % return
 video=VideoReader(file);
 % video=VideoReader('3Link_LargeEllipse\3LinkSwimmerSymmetric_Spring_f130_A60_S01.mp4');
@@ -81,13 +80,11 @@ plots=1;    % set to "1" to display plots, "0" for no plots
 firstRun=1; % set to "1" if camera or pool/markers have moved, "0" if parameters can be loaded from mat file
 
 if(~firstRun)
-%     load('Preload_Crop_Mask_3LinkFish.mat')
     load('Preload_Crop_Mask_3LinkSnake.mat')
 end
-
+% mask rect xrefHigh yrefHigh
 %*** Reference markers ***
-% markers=[6;0;6;117.95;232;118.75;232;0];    % measurements in cm
-markers=[0;0;0;135.3;231.7;135.3;230.6;0];        % 3LinkSnake
+markers=[0;0;0;135.3;231.7;135.3;230.6;0];    % measurements in cm
 
 %*** Select # of markers to track ***
 numberOfMarkersOnHighPlane=6;
@@ -150,14 +147,14 @@ t0=tic;
 endFrame=100;
 fps=video.frame;
 N=video.NumberOfFrames-(startFrame-1);   %This or ...
+N=600;
 % N=100;                                          %This
 % N=endFrame-(startFrame-1);
 % N=100;
 s(N)=struct('centroids',[]);
-N=600;
 % for i=1:video.NumberOfFrames,
 bHigh=zeros(N,2,numberOfMarkersOnHighPlane);
-for i=1:N,    %i:N
+for i=1:N    %i:N
     if(i>1)
 % %         im=imcrop(read(video,i+(startFrame-1)),rect);
         im=imcrop(read(video,i+(startFrame-1)),rect2);
@@ -168,9 +165,7 @@ for i=1:N,    %i:N
         % sometimes if we process the initial frame, there is some issue
         % detecting the color, the image is still adjusting...
         im_refMarkers=imcrop(read(video,startFrame+15),rect);
-        % BW_refMarkers=detectColorHSV(im_refMarkers.*uint8(repmat(mask,[1,1,3])),color);
-        % With the previous line commented I am not using a mask for the 4 ref markers...
-        BW_refMarkers=detectColorHSV(im_refMarkers,color);
+        BW_refMarkers=detectColorHSV(im_refMarkers.*uint8(repmat(mask,[1,1,3])),color);
         BW_refMarkers=bwareaopen(BW_refMarkers,8,4);
         % We also do it without _refMarkers, for normal processing of
         % markers on robot...
@@ -287,30 +282,27 @@ s(i).centroids=centroids;
         %Now we calculate the pairwise distances
         nBlobs=length(s1Real);
         dist=zeros(nBlobs);
-        for k=1:nBlobs-1,
-            for j=k+1:nBlobs,
+        for k=1:nBlobs-1
+            for j=k+1:nBlobs
                 dist(k,j)=norm(s1Real(k,:)-s1Real(j,:));
             end
         end
         
         %Now we identify the six markers on the 3-Link Swimmer
-%         distance of tail markers:  7.62 cm
-%         distance of body markers: 19.05 cm
-%         distance of headmarkers: 11.43 cm 
+%         distance of tail markers:  10.3 cm
+%         distance of body markers: 6.5 cm
+%         distance of headmarkers: 8.7 cm 
 
-%         tailDist=7.62;
-        tailDist = 10.3;
+        tailDist=10.3;
         tailMatrix=abs(dist-tailDist);
         [tail_i,tail_j]=find(tailMatrix==min(tailMatrix(:)));
         tail_centroid=(s1Real(tail_i,:)+s1Real(tail_j,:))/2;
 
-%         bodyDist=19.05;
         bodyDist=6.5;
         bodyMatrix=abs(dist-bodyDist);
         [body_i,body_j]=find(bodyMatrix==min(bodyMatrix(:)));
         body_centroid=(s1Real(body_i,:)+s1Real(body_j,:))/2;
         
-%         headDist=11.43;
         headDist=8.7;
         headMatrix=abs(dist-headDist);
         [head_i,head_j]=find(headMatrix==min(headMatrix(:)));
@@ -881,14 +873,13 @@ end
 % return    
 %% Save data...
 %save('savedData\3LinkSwimmerSymmetric_Spring_f140_A60_S01.mat','fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
-save([folder,'savedData\',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
-save(['savedData\',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
+save(['savedData/',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
+%save('savedData/3LinkSnake_1Spring_A20_f10_Test05.mat')
 % PostProcess_3LinkEllipse    
 figure(6)   % See errors...
 set (figure(6), 'Units', 'normalized', 'Position', [0,0,1,1]);
-% load handel
-% sound(y,Fs)
-figure(6), pause(1),
-% saveAsPdf(6,['Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
-saveAsPdf(6,[folder,'Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
+load handel
+sound(y,Fs)
+saveAsPdf(6,['Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
+%saveAsPdf(6,['Processed_MarkersDistances/FixedMarkers_',file])
 pause(3)

@@ -1,10 +1,3 @@
-% 2/21/18
-% Modified to accommodate 4 links...
-%
-% 1/29/18
-% Modified the way the mask is selected (ROI) so that it doesn't include
-% the 4 reference markers. Works with the 3 link kinematic snake
-%
 % *************************************************************************
 % ******************************* Mod 1 ***********************************
 % 4/19/17
@@ -17,7 +10,6 @@
 % will automatically find 4 markers (on the fish), and detecect the
 % appropirate orientation, first maker will be on the head, second on the
 % body, third on body and fourth on tail. The way we are able to do this is
-
 % by looking at the first BW frame obtained after processing the color of
 % the markers, then we find the pairwise distance between all markers and
 % select the four markers that meet the dimensions of the actual 3LinkFish.
@@ -35,18 +27,16 @@
 % 
 % So I need to fully process the first frame and identify the four markers,
 % so I can define an area that I have to focus on for the coming frame...
-
+clear
 close all
-clearvars -except ff        % ff is part of an external for loop
+% clearvars -except ff        % ff is part of an external for loop
 clc  % Comment to use crop and ROI from WorkSpace memory %********%
 % rect=round(rect)
 % figure(1),clf
 %% Load Video, take first frame
 
 % folder='Videos_Spring\';
-folder='Videos_Spring/';
-file1='3LinkSnake_2Spring_A55_f';
-% file1='3LinkSwimmer_Symmetric_FullyActuated_f';
+% file1='Software_Test01';
 % file1='3LinkSwimmer_Symmetric_Spring_f';
 % file1='3LinkSwimmer_FatHead_Spring_f';
 % file1='3LinkSwimmer_FatHead_EqSpacing_Spring_f';
@@ -57,22 +47,23 @@ file1='3LinkSnake_2Spring_A55_f';
 % file1='testAngles3';
 % file2='_A60_S01';
 % file2='_A30_S02';
-% file2='_Test05';
-% file2='_A60_S03';
-file2='';
-ext='.mp4';
-% f=0.1;       % frequency of actuator
-f=ff/10             % Use ff in an external for loop
-file_middle='';
-if(ff>=10)
-    file_middle=num2str(f*10);
-else if(ff>=1)
-        file_middle=['0',num2str(f*10)];
-    else
-        file_middle=['00',num2str(f*10)];
-    end
-end
-file=[folder,file1,file_middle,file2,ext]
+% % file2='_A60_S03';
+% % file2='';
+% ext='.mp4';
+% % f=0.1;       % frequency of actuator
+% f=ff/10             % Use ff in an external for loop
+% file_middle='';
+% if(ff>=10)
+%     file_middle=num2str(f*100);
+% else if(ff>=1)
+%         file_middle=['0',num2str(f*100)];
+%     else
+%         file_middle=['00',num2str(f*100)];
+%     end
+% end
+% file=[folder,file1,file_middle,file2,ext]
+file='/Users/blake/Documents/Research/Process_NLinkSnake/Videos_Spring/Software_Test01.mp4';
+
 % return
 video=VideoReader(file);
 % video=VideoReader('3Link_LargeEllipse\3LinkSwimmerSymmetric_Spring_f130_A60_S01.mp4');
@@ -81,16 +72,14 @@ plots=1;    % set to "1" to display plots, "0" for no plots
 firstRun=1; % set to "1" if camera or pool/markers have moved, "0" if parameters can be loaded from mat file
 
 if(~firstRun)
-%     load('Preload_Crop_Mask_3LinkFish.mat')
-    load('Preload_Crop_Mask_3LinkSnake.mat')
+    load('Preload_Crop_Mask_3LinkFish.mat')
 end
 
 %*** Reference markers ***
-% markers=[6;0;6;117.95;232;118.75;232;0];    % measurements in cm
-markers=[0;0;0;135.3;231.7;135.3;230.6;0];        % 3LinkSnake
+markers=[0;0;0;129.3;247.17;130.15;247.17;0];    % measurements in cm
 
 %*** Select # of markers to track ***
-numberOfMarkersOnHighPlane=6;
+numberOfMarkersOnHighPlane=2;
 numberOfMarkersOnLowPlane=0;
 
 %*** Select color(s) to track ***
@@ -154,10 +143,9 @@ N=video.NumberOfFrames-(startFrame-1);   %This or ...
 % N=endFrame-(startFrame-1);
 % N=100;
 s(N)=struct('centroids',[]);
-N=600;
 % for i=1:video.NumberOfFrames,
 bHigh=zeros(N,2,numberOfMarkersOnHighPlane);
-for i=1:N,    %i:N
+for i=1:N    %i:N
     if(i>1)
 % %         im=imcrop(read(video,i+(startFrame-1)),rect);
         im=imcrop(read(video,i+(startFrame-1)),rect2);
@@ -168,9 +156,7 @@ for i=1:N,    %i:N
         % sometimes if we process the initial frame, there is some issue
         % detecting the color, the image is still adjusting...
         im_refMarkers=imcrop(read(video,startFrame+15),rect);
-        % BW_refMarkers=detectColorHSV(im_refMarkers.*uint8(repmat(mask,[1,1,3])),color);
-        % With the previous line commented I am not using a mask for the 4 ref markers...
-        BW_refMarkers=detectColorHSV(im_refMarkers,color);
+        BW_refMarkers=detectColorHSV(im_refMarkers.*uint8(repmat(mask,[1,1,3])),color);
         BW_refMarkers=bwareaopen(BW_refMarkers,8,4);
         % We also do it without _refMarkers, for normal processing of
         % markers on robot...
@@ -217,10 +203,10 @@ if(i>1)
     % Track the closest marker
     bHigh(i,:,1)=closestBall(centroids,bHigh(i-1,:,1));
     bHigh(i,:,2)=closestBall(centroids,bHigh(i-1,:,2));
-    bHigh(i,:,3)=closestBall(centroids,bHigh(i-1,:,3));
-    bHigh(i,:,4)=closestBall(centroids,bHigh(i-1,:,4));
-    bHigh(i,:,5)=closestBall(centroids,bHigh(i-1,:,5));
-    bHigh(i,:,6)=closestBall(centroids,bHigh(i-1,:,6));
+%     bHigh(i,:,3)=closestBall(centroids,bHigh(i-1,:,3));
+%     bHigh(i,:,4)=closestBall(centroids,bHigh(i-1,:,4));
+%     bHigh(i,:,5)=closestBall(centroids,bHigh(i-1,:,5));
+%     bHigh(i,:,6)=closestBall(centroids,bHigh(i-1,:,6));
     %
     oldMinX=min(bHigh(i,1,:));
     oldMaxX=max(bHigh(i,1,:));
@@ -285,13 +271,13 @@ s(i).centroids=centroids;
         s1Real=projectCoordinates(s1Flipped,THigh);        
         
         %Now we calculate the pairwise distances
-        nBlobs=length(s1Real);
-        dist=zeros(nBlobs);
-        for k=1:nBlobs-1,
-            for j=k+1:nBlobs,
-                dist(k,j)=norm(s1Real(k,:)-s1Real(j,:));
-            end
-        end
+%         nBlobs=length(s1Real);
+%         dist=zeros(nBlobs);
+%         for k=1:nBlobs-1,
+%             for j=k+1:nBlobs,
+%                 dist(k,j)=norm(s1Real(k,:)-s1Real(j,:));
+%             end
+%         end
         
         %Now we identify the six markers on the 3-Link Swimmer
 %         distance of tail markers:  7.62 cm
@@ -299,55 +285,52 @@ s(i).centroids=centroids;
 %         distance of headmarkers: 11.43 cm 
 
 %         tailDist=7.62;
-        tailDist = 10.3;
-        tailMatrix=abs(dist-tailDist);
-        [tail_i,tail_j]=find(tailMatrix==min(tailMatrix(:)));
-        tail_centroid=(s1Real(tail_i,:)+s1Real(tail_j,:))/2;
-
+%         tailMatrix=abs(dist-tailDist);
+%         [tail_i,tail_j]=find(tailMatrix==min(tailMatrix(:)));
+%         tail_centroid=(s1Real(tail_i,:)+s1Real(tail_j,:))/2;
+% 
 %         bodyDist=19.05;
-        bodyDist=6.5;
-        bodyMatrix=abs(dist-bodyDist);
-        [body_i,body_j]=find(bodyMatrix==min(bodyMatrix(:)));
-        body_centroid=(s1Real(body_i,:)+s1Real(body_j,:))/2;
-        
+%         bodyMatrix=abs(dist-bodyDist);
+%         [body_i,body_j]=find(bodyMatrix==min(bodyMatrix(:)));
+%         body_centroid=(s1Real(body_i,:)+s1Real(body_j,:))/2;
+%         
 %         headDist=11.43;
-        headDist=8.7;
-        headMatrix=abs(dist-headDist);
-        [head_i,head_j]=find(headMatrix==min(headMatrix(:)));
-        head_centroid=(s1Real(head_i,:)+s1Real(head_j,:))/2;
+%         headMatrix=abs(dist-headDist);
+%         [head_i,head_j]=find(headMatrix==min(headMatrix(:)));
+%         head_centroid=(s1Real(head_i,:)+s1Real(head_j,:))/2;
         
         % So I know which pairs represent the Head, Body and Tail
         % I should now order them from Head to tail...
         
-        head_i_body_dist=norm(s1Real(head_i,:)-body_centroid);
-        head_j_body_dist=norm(s1Real(head_j,:)-body_centroid);
-        if( head_i_body_dist > head_j_body_dist )
-            head1_Blob = head_i;
-            head2_Blob = head_j;
-        else
-            head1_Blob = head_j;
-            head2_Blob = head_i;
-        end
-        
-        body_i_head_dist=norm(s1Real(body_i,:)-head_centroid);
-        body_j_head_dist=norm(s1Real(body_j,:)-head_centroid);
-        if( body_i_head_dist < body_j_head_dist )
-            body3_Blob = body_i;
-            body4_Blob = body_j;
-        else
-            body3_Blob = body_j;
-            body4_Blob = body_i;
-        end
-        
-        tail_i_body_dist=norm(s1Real(tail_i,:)-body_centroid);
-        tail_j_body_dist=norm(s1Real(tail_j,:)-body_centroid);
-        if( tail_i_body_dist < tail_j_body_dist )
-            tail5_Blob = tail_i;
-            tail6_Blob = tail_j;
-        else
-            tail5_Blob = tail_j;
-            tail6_Blob = tail_i;
-        end
+%         head_i_body_dist=norm(s1Real(head_i,:)-body_centroid);
+%         head_j_body_dist=norm(s1Real(head_j,:)-body_centroid);
+%         if( head_i_body_dist > head_j_body_dist )
+%             head1_Blob = head_i;
+%             head2_Blob = head_j;
+%         else
+%             head1_Blob = head_j;
+%             head2_Blob = head_i;
+%         end
+%         
+%         body_i_head_dist=norm(s1Real(body_i,:)-head_centroid);
+%         body_j_head_dist=norm(s1Real(body_j,:)-head_centroid);
+%         if( body_i_head_dist < body_j_head_dist )
+%             body3_Blob = body_i;
+%             body4_Blob = body_j;
+%         else
+%             body3_Blob = body_j;
+%             body4_Blob = body_i;
+%         end
+%         
+%         tail_i_body_dist=norm(s1Real(tail_i,:)-body_centroid);
+%         tail_j_body_dist=norm(s1Real(tail_j,:)-body_centroid);
+%         if( tail_i_body_dist < tail_j_body_dist )
+%             tail5_Blob = tail_i;
+%             tail6_Blob = tail_j;
+%         else
+%             tail5_Blob = tail_j;
+%             tail6_Blob = tail_i;
+%         end
         
         % So now I know the order of the 6 blobs.
                                                                                             % ***************************************
@@ -456,12 +439,12 @@ s(i).centroids=centroids;
 %         return
         
         %Now we already now our starting markers positions... 4 markers for fish
-        bHigh(1,:,1)=s(1).centroids(head1_Blob,:);
-        bHigh(1,:,2)=s(1).centroids(head2_Blob,:);
-        bHigh(1,:,3)=s(1).centroids(body3_Blob,:);
-        bHigh(1,:,4)=s(1).centroids(body4_Blob,:);
-        bHigh(1,:,5)=s(1).centroids(tail5_Blob,:);
-        bHigh(1,:,6)=s(1).centroids(tail6_Blob,:);
+%         bHigh(1,:,1)=s(1).centroids(head1_Blob,:);
+%         bHigh(1,:,2)=s(1).centroids(head2_Blob,:);
+%         bHigh(1,:,3)=s(1).centroids(body3_Blob,:);
+%         bHigh(1,:,4)=s(1).centroids(body4_Blob,:);
+%         bHigh(1,:,5)=s(1).centroids(tail5_Blob,:);
+%         bHigh(1,:,6)=s(1).centroids(tail6_Blob,:);
         oldMinX=min(bHigh(1,1,:));
         oldMaxX=max(bHigh(1,1,:));
         oldMinY=min(bHigh(1,2,:));
@@ -881,14 +864,11 @@ end
 % return    
 %% Save data...
 %save('savedData\3LinkSwimmerSymmetric_Spring_f140_A60_S01.mat','fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
-save([folder,'savedData\',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
 save(['savedData\',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
 % PostProcess_3LinkEllipse    
 figure(6)   % See errors...
 set (figure(6), 'Units', 'normalized', 'Position', [0,0,1,1]);
-% load handel
-% sound(y,Fs)
-figure(6), pause(1),
-% saveAsPdf(6,['Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
-saveAsPdf(6,[folder,'Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
+load handel
+sound(y,Fs)
+saveAsPdf(6,['Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
 pause(3)

@@ -37,10 +37,10 @@
 % so I can define an area that I have to focus on for the coming frame...
 
 close all
-clearvars -except ff        % ff is part of an external for loop
+clearvars -except ff aa       % ff is part of an external for loop
 clc  % Comment to use crop and ROI from WorkSpace memory %********%
 
-numberOfLinks = 4;
+numberOfLinks = 3;
 
 % rect=round(rect)
 % figure(1),clf
@@ -49,24 +49,30 @@ numberOfLinks = 4;
 % folder='Videos_Spring\';
 % ff=1;
 % folder='01.13.18\';
-folder='4Link\02.23.18\';
-file1='4LinkSnake_2_2_Spring_A20_f';
+amplitudes=[60 65];
+folder='Videos_Spring/3LinkAmp_f03_SmallK/';
+file1='3LinkSnake_2Spring_A';
 % file1='4LinkSnake_21Spring_A25_f';
 % file1='4LinkSnake_f';
 % file1='3LinkSnake_3Spring_A20_f';
-file2='';
+
+file2='_f03';
+file_middle=num2str(aa);
+%file_middle='';
 ext='.mp4';
-% f=0.1;       % frequency of actuator
+% f=0.3;       % frequency of actuator
 f=ff/10             % Use ff in an external for loop
-file_middle='';
-if(ff>=10)
-    file_middle=num2str(f*10);
-else if(ff>=1)
-        file_middle=['0',num2str(f*10)];
-    else
-        file_middle=['00',num2str(f*10)];
-    end
-end
+
+%file_middle=num2str(aa);
+% if(ff>=10)
+%     file_middle=num2str(f*10);
+% else if(ff>=1)
+%         file_middle=['0',num2str(f*10)];
+%     else
+%         file_middle=['00',num2str(f*10)];
+%     end
+% end
+
 file=[folder,file1,file_middle,file2,ext]
 % return
 video=VideoReader(file);
@@ -99,7 +105,6 @@ color=4; % could use more colors ex: color=[1,2,3,4]
 startFrame=1;
 im=read(video,startFrame);
 
-
 %% Crop area of interest.
 if(firstRun)
     display('Select area to crop')
@@ -123,6 +128,7 @@ t0=tic;
 endFrame=100;
 fps=video.frame;
 N=video.NumberOfFrames-(startFrame-1);   %This or ... N = last frame I want
+N=588;
 s(N)=struct('centroids',[]);
 bHigh=zeros(N,2,numberOfMarkersOnHighPlane);
 for i=1:N,    %i:N
@@ -182,7 +188,7 @@ for i=1:N,    %i:N
         centroids(:,1)=centroids(:,1)+xOffset-1;
         centroids(:,2)=centroids(:,2)+yOffset-1;
         % Track the closest marker
-        for k=1:numberOfMarkersOnHighPlane,
+        for k=1:nBlobs,
             bHigh(i,:,k)=closestBall(centroids,bHigh(i-1,:,k));
         end
 
@@ -249,7 +255,7 @@ for i=1:N,    %i:N
         s1Real=projectCoordinates(s1Flipped,THigh);
         
         %Now we calculate the pairwise distances
-        nBlobs=length(s1Real);
+        nBlobs=numberOfMarkersOnHighPlane;
         dist=zeros(nBlobs);
         for k=1:nBlobs-1,
             for j=k+1:nBlobs,
@@ -313,7 +319,7 @@ for i=1:N,    %i:N
         
         %Now we already now our starting markers positions... 2N markers
         %for an N Link fish/snake... (this will be the initial markers)
-        for k=1:numberOfMarkersOnHighPlane,
+        for k=1:nBlobs,
             bHigh(1,:,k)=s(1).centroids(bodyBlobsOrdered(k),:);
         end
         
@@ -418,11 +424,12 @@ if(plots)
     xlabel('frame')
 end
 
-% return
+return
 
 %% Save data...
 %save('savedData\3LinkSwimmerSymmetric_Spring_f140_A60_S01.mat','fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
-save([folder,'savedData\',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
+% save([folder,'savedData/',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
+save(['savedData/',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
 % save(['savedData\',file1,file_middle,file2,'.mat'],'fps','bHighReal','f','im1cropped','imLastCropped','bHigh')
 % PostProcess_3LinkEllipse
 figure(6)   % See errors...
@@ -431,5 +438,5 @@ set (figure(6), 'Units', 'normalized', 'Position', [0,0,1,1]);
 % sound(y,Fs)
 figure(6), pause(1),
 % saveAsPdf(6,['Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
-saveAsPdf(6,[folder,'Processed_MarkersDistances\FixedMarkers_',file1,file_middle,file2])
+saveAsPdf(6,['Processed_MarkersDistances/FixedMarkers_',file1,file_middle,file2])
 pause(3)

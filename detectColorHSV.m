@@ -74,36 +74,13 @@ for i=1:nColors         % set the threshold values for all req'd colors
 %             saturationThresholdHigh=1;
 %             valueThresholdLow=0.55; %0.55
 %             valueThresholdHigh=1;    
-
-%% **** Works well in Lab ****
-%             hueThresholdLow=0.09;                   % Changed to this on 4/19/17
-%             hueThresholdHigh=.15;  
-%             saturationThresholdLow=0.5; 
-%             saturationThresholdHigh=1;
-%             valueThresholdLow=0.66; %Try 0.58
-%             valueThresholdHigh=1;    
-
-%% **** For classroom ****                              % Changed to this on 3/7/18
-            hueThresholdLow=0.07;                   
-            hueThresholdHigh=.157;  
-%             hueThresholdHigh=.153;  
-            saturationThresholdLow=0.5; %0.4
-            saturationThresholdHigh=1;  
-            valueThresholdLow=0.66; %Try 0.58 0.4
-            valueThresholdHigh=1;                
             
-            
-%             hueThresholdLow=0.07059;               % Changed to this on 2/22/18 For S5 Camera
-%             hueThresholdHigh=0.1569;
-%             saturationThresholdLow=0.3765;
-%             saturationThresholdHigh=0.8627;
-%             valueThresholdLow=0.3098;
-%             valueThresholdHigh=0.7098;
-            
-% Trying using Galaxy S5 camera...
-% Hue: (0.094,0.1569)           (0.07059,0.1569)
-% Saturation: (0.3765,0.7765)   (0.4235,0.8627)
-% Value: (0.4271,0.7098)        (0.3098,0.6549)
+            hueThresholdLow=0.09; %0.05             % Changed to this on 4/19/17
+            hueThresholdHigh=.15;  %0.15
+            saturationThresholdLow=0.5; %0.35
+            saturationThresholdHigh=1;
+            valueThresholdLow=0.66; %0.55
+            valueThresholdHigh=1;    
             
             %Trying for Rakshit's Pool (Yellow Marker) %Doesn't work great
 %             hueThresholdLow=0.1020; %0.05

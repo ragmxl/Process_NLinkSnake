@@ -16,18 +16,21 @@
 
 %% This block is used to find the initial frame, "startFrame"
 clearvars -except ff
-% ff=1;
 %clc
-file1='4Link\02.23.18\savedData\4LinkSnake_2_2_Spring_A20_f';
+file1='savedData/3LinkFreq_f03_SmallKData/4LinkSnake_2Spring_A55_f';
 % file1='01.13.18\savedData\3LinkSnake_3Spring_A20_f';
 % file1='savedData\3LinkSwimmer_Symmetric_FullyActuated_f';
 % file1='savedData\3LinkSwimmer_Symmetric_Spring_f';
 % file2='_A60_S01';
 % file2='_A60_S02';
 % file2='_A30_S02';
-file2='';
+
+numcycles = 4;
+
+file2='_f03';
 ext='.mat';
 f=ff/10             % Use ff in an external for loop
+% file_middle=num2str(aa)
 file_middle='';
 if(ff>=10)
     file_middle=num2str(f*10);
@@ -42,7 +45,7 @@ file=[file1,file_middle,file2,ext]
 load(file);
 
 %%
-% startFrame=1;         % savedData includes this synced with experiment
+startFrame=1;         % savedData includes this synced with experiment
 pool_axes=[0,232,0,118.7];
 
 figure(7),clf
@@ -229,8 +232,82 @@ legend('1','2','3','4','5')
 xlabel('\alpha_2')
 ylabel('\alpha_3')
 
-%%
+% BEGIN CODE COPIED FROM 3LINK
+figure(15),clf
+for cycle=1:5,
+    
+% We need to change the way we define "first" and "last" since it's possible we
+% may not have access to full cycles due to a slightly shortened experiment.
+
+first=1+42/f*(cycle-1);
+last=first+42/f;
+% plot(alpha1,alpha2)
+
+% Standardizd size of plot
+maxalpha1=max(alpha1)*180/pi;
+maxalpha2=max(alpha2)*180/pi;
+
+%plot(alpha1(first:last),alpha2(first:last))
+plot(alpha1*180/pi,alpha2*180/pi,'b')
+axis([-(maxalpha1+10) maxalpha1+10 -(maxalpha1+10) maxalpha1+10])
+axis square
+%title('Phase Space','Interpreter','latex','FontSize',18)
+xlabel('$$\alpha_1$$ (degrees)','Interpreter','latex','FontSize',18)
+ylabel('$$\alpha_2$$ (degrees)','Interpreter','latex','FontSize',18)
+
+% Save Matlab figure and .png file for convenience
+savefig([file1,file_middle,file2,'phasespace.fig'])
+saveas(gcf,[file1,file_middle,file2,'phasespace'],'pdf')
+
+hold on
+
+end
+%legend('1','2','3','4','5')
+% Need to change this to time axis
 figure(16),clf
+plot(t,alpha1*180/pi,'b')
+hold on
+plot(t,alpha2*180/pi,'r')
+%title('Joint Angles','Interpreter','latex','FontSize',18)
+axis([0 (numcycles+1)/f -(maxalpha1+10) maxalpha1+10])
+xlabel('Time (seconds)','Interpreter','latex','FontSize',18)
+ylabel('Amplitude (degrees)','Interpreter','latex','FontSize',18)
+legend('$$\alpha_1$$','$$\alpha_2$$')
+
+% Save Matlab figure and .png file for convenience
+savefig([file1,file_middle,file2,'jointangles.fig'])
+saveas(gcf,[file1,file_middle,file2,'jointangles.pdf'])
+
+% Rodrigo's rotation of coordinates
+dt=1/fps;
+t=0:dt:dt*(length(center)-1);
+fontSize=18;
+
+% First move the initial position to the origin
+points1=center;
+points1=points1-[ones(length(points1),1)*center(1,1),ones(length(points1),1)*center(1,2)];
+
+theta=atan2(b3(:,2)-b4(:,2),b3(:,1)-b4(:,1));
+
+% Now, correct initial heading angle, so everything has theta = 0
+R1=[cos(-theta(1)),-sin(-theta(1)); sin(-theta(1)),cos(-theta(1))];
+
+xy=(R1*points1')';
+
+figure(17),clf
+plot(xy(:,1),xy(:,2),'k')
+set(gca,'fontsize',fontSize)
+grid
+axis equal
+xlabel('x (cm)')
+ylabel('y (cm)')
+pause(1.5)
+
+% Save Matlab figure and .png file for convenience
+savefig([file1,file_middle,file2,'rotatedtraj.fig'])
+saveas(gcf,[file1,file_middle,file2,'rotatedtraj.pdf'])
+%%
+figure(18),clf
 for cycle=1:5,
 first=1+42/f*(cycle-1);
 last=first+42/f;
@@ -252,7 +329,6 @@ grid on
 % return
 %% Save x,y,theta,alpha1,alpha2,phi_Head,phi_Tail...
 % save(file,'-append','center','phi_Link1','phi_Link2','phi_Link3','phi_Link4','alpha1','alpha2','alpha3','b1','b2','b3','b4','b5','b6')
-
 
 %% To find the first frame "startFrame"...
 return
