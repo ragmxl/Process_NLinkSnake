@@ -17,7 +17,7 @@
 %% This block is used to find the initial frame, "startFrame"
 clearvars -except ff
 %clc
-file1='savedData/3LinkFreq_f03_SmallKData/4LinkSnake_2Spring_A55_f';
+file1='savedData/4LinkFreq_A55_SmallKData/4LinkSnake_2_2_Spring_A55_f';
 % file1='01.13.18\savedData\3LinkSnake_3Spring_A20_f';
 % file1='savedData\3LinkSwimmer_Symmetric_FullyActuated_f';
 % file1='savedData\3LinkSwimmer_Symmetric_Spring_f';
@@ -27,10 +27,11 @@ file1='savedData/3LinkFreq_f03_SmallKData/4LinkSnake_2Spring_A55_f';
 
 numcycles = 4;
 
-file2='_f03';
+file2='';
 ext='.mat';
 f=ff/10             % Use ff in an external for loop
 % file_middle=num2str(aa)
+
 file_middle='';
 if(ff>=10)
     file_middle=num2str(f*10);

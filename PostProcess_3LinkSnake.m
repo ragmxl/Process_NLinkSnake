@@ -9,7 +9,8 @@
 clearvars -except ff aa
 %ff=2;
 %clc
-file1='savedData/3LinkAmp_f03_SmallKData/3LinkSnake_2Spring_A';
+aa=1;
+file1='savedData/3LinkFreq_A55_SmallKData/3LinkSnake_2Spring_A55_f';
 % file1='savedData\3LinkSwimmer_Symmetric_FullyActuated_f';
 % file1='savedData\3LinkSwimmer_Symmetric_Spring_f';
 % file2='_A60_S01';
@@ -18,19 +19,21 @@ file1='savedData/3LinkAmp_f03_SmallKData/3LinkSnake_2Spring_A';
 
 numcycles = 4;
 
-file2='_f03';
+file2='';
 ext='.mat';
-file_middle=num2str(aa);
+
+% file_middle=num2str(aa);
+
 f=ff/10             % Use ff in an external for loop
-% file_middle='';
-% if(ff>=10)
-%     file_middle=num2str(f*10);
-% else if(ff>=1)
-%         file_middle=['0',num2str(f*10)];
-%     else
-%         file_middle=['00',num2str(f*10)];
-%     end
-% end
+file_middle='';
+if(ff>=10)
+    file_middle=num2str(f*10);
+else if(ff>=1)
+        file_middle=['0',num2str(f*10)];
+    else
+        file_middle=['00',num2str(f*10)];
+    end
+end
 file=[file1,file_middle,file2,ext]
 % return
 load(file);
