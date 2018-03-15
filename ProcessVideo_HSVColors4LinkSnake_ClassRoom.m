@@ -47,7 +47,7 @@ numberOfLinks = 4;
 %% Load Video, take first frame
 
 % folder='Videos_Spring\';
-ff=5;
+% ff=5;
 % folder='01.13.18\';
 folder='4Link\GalaxyS5\';
 % folder='4Link\02.23.18\';

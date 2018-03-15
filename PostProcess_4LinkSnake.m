@@ -17,7 +17,9 @@
 %% This block is used to find the initial frame, "startFrame"
 clearvars -except ff
 %clc
-file1='savedData/4LinkFreq_A55_SmallKData/4LinkSnake_2_2_Spring_A55_f';
+file1='matFiles/4LinkFreq_A55_SmallKData/4LinkSnake_2_2_Spring_A55_f';
+ff=2;
+% file1='savedData/4LinkFreq_A55_SmallKData/4LinkSnake_2_2_Spring_A55_f';
 % file1='01.13.18\savedData\3LinkSnake_3Spring_A20_f';
 % file1='savedData\3LinkSwimmer_Symmetric_FullyActuated_f';
 % file1='savedData\3LinkSwimmer_Symmetric_Spring_f';
@@ -104,22 +106,28 @@ phi_Link1 = correctAngle(phi_Link1);
 m_Link2 = (b3(:,2)-b4(:,2))./(b3(:,1)-b4(:,1));
 % phi_Body2 = atan2(b3(:,2)-b4(:,2),b3(:,1)-b4(:,1));
 phi_Link2 = atan(m_Link2);
+phi_Link2 = correctAngle(phi_Link2);
 m_Link3 = (b5(:,2)-b6(:,2))./(b5(:,1)-b6(:,1));
 phi_Link3 = atan(m_Link3);
+phi_Link3 = correctAngle(phi_Link3);
 m_Link4 = (b7(:,2)-b8(:,2))./(b7(:,1)-b8(:,1));
 phi_Link4 = atan(m_Link4);
+phi_Link4 = correctAngle(phi_Link4);
 plot(phi_Link1)
 hold on
 grid on
 plot(phi_Link2)
 plot(phi_Link1-phi_Link2)
 alpha1=phi_Link1-phi_Link2;
+alpha1=correctAngle(alpha1);
 plot(phi_Link3)
 plot(phi_Link2-phi_Link3)
 alpha2=phi_Link2-phi_Link3;
+alpha2=correctAngle(alpha2);
 plot(phi_Link4)
 plot(phi_Link3-phi_Link4)
 alpha3=phi_Link3-phi_Link4;
+alpha3=correctAngle(alpha3);
 legend('Head','Link2','\alpha_1','Link3','\alpha_2','Link4','\alpha_3')
 threshold=1*pi/180;
 plot([1,400],[threshold,threshold],'--k')
@@ -259,6 +267,7 @@ ylabel('$$\alpha_2$$ (degrees)','Interpreter','latex','FontSize',18)
 % Save Matlab figure and .png file for convenience
 savefig([file1,file_middle,file2,'phasespace.fig'])
 saveas(gcf,[file1,file_middle,file2,'phasespace'],'pdf')
+% saveAsPdf(get(gcf,'Number'),[file1,file_middle,file2,'phasespace.pdf'])
 
 hold on
 
@@ -278,6 +287,7 @@ legend('$$\alpha_1$$','$$\alpha_2$$')
 % Save Matlab figure and .png file for convenience
 savefig([file1,file_middle,file2,'jointangles.fig'])
 saveas(gcf,[file1,file_middle,file2,'jointangles.pdf'])
+% saveAsPdf(get(gcf,'Number'),[file1,file_middle,file2,'jointangles.pdf'])
 
 % Rodrigo's rotation of coordinates
 dt=1/fps;
@@ -307,6 +317,7 @@ pause(1.5)
 % Save Matlab figure and .png file for convenience
 savefig([file1,file_middle,file2,'rotatedtraj.fig'])
 saveas(gcf,[file1,file_middle,file2,'rotatedtraj.pdf'])
+% saveAsPdf(get(gcf,'Number'),[file1,file_middle,file2,'rotatedtraj.pdf'])
 %%
 figure(18),clf
 for cycle=1:5,
@@ -320,7 +331,7 @@ plot3(alpha1(first:last),alpha2(first:last),alpha3(first:last))
 hold on
 axis square
 end
-legend('1','2','3','4','5')
+legend('1','2','3','4','5','6')
 xlabel('\alpha_1')
 ylabel('\alpha_2')
 zlabel('\alpha_3')

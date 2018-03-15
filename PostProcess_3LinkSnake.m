@@ -7,10 +7,11 @@
 
 %% This block is used to find the initial frame, "startFrame"
 clearvars -except ff aa
-%ff=2;
+ff=3;
 %clc
 aa=1;
-file1='savedData/3LinkFreq_A55_SmallKData/3LinkSnake_2Spring_A55_f';
+file1='matFiles/3LinkAmp_f03_SmallKData/3LinkSnake_2Spring_A70_f';
+% file1='savedData/3LinkFreq_A55_SmallKData/3LinkSnake_2Spring_A55_f';
 % file1='savedData\3LinkSwimmer_Symmetric_FullyActuated_f';
 % file1='savedData\3LinkSwimmer_Symmetric_Spring_f';
 % file2='_A60_S01';
@@ -84,17 +85,21 @@ phi_Head = correctAngle(phi_Head);
 m_Body = (b3(:,2)-b4(:,2))./(b3(:,1)-b4(:,1));
 % phi_Body2 = atan2(b3(:,2)-b4(:,2),b3(:,1)-b4(:,1));
 phi_Body = atan(m_Body);
+phi_Body = correctAngle(phi_Body);
 m_Tail = (b5(:,2)-b6(:,2))./(b5(:,1)-b6(:,1));
 phi_Tail = atan(m_Tail);
+phi_Tail = correctAngle(phi_Tail);
 plot(phi_Head)
 hold on
 grid on
 plot(phi_Body)
 plot(phi_Head-phi_Body)
 alpha1=phi_Head-phi_Body;
+alpha1=correctAngle(alpha1);
 plot(phi_Tail)
 plot(phi_Body-phi_Tail)
 alpha2=phi_Body-phi_Tail;
+alpha2=correctAngle(alpha2);
 legend('Head','Body','HB','Tail','TB')
 threshold=1*pi/180;
 plot([1,400],[threshold,threshold],'--k')
@@ -197,6 +202,7 @@ ylabel('$$\alpha_2$$ (degrees)','Interpreter','latex','FontSize',18)
 % Save Matlab figure and .png file for convenience
 savefig([file1,file_middle,file2,'phasespace.fig'])
 saveas(gcf,[file1,file_middle,file2,'phasespace'],'pdf')
+%saveAsPdf(get(gcf,'Number'),[file1,file_middle,file2,'phasespace.pdf'])
 
 hold on
 
@@ -216,6 +222,7 @@ legend('$$\alpha_1$$','$$\alpha_2$$')
 % Save Matlab figure and .png file for convenience
 savefig([file1,file_middle,file2,'jointangles.fig'])
 saveas(gcf,[file1,file_middle,file2,'jointangles.pdf'])
+%saveAsPdf(get(gcf,'Number'),[file1,file_middle,file2,'phasespace.pdf'])
 
 % Rodrigo's rotation of coordinates
 dt=1/fps;
@@ -245,6 +252,7 @@ pause(1.5)
 % Save Matlab figure and .png file for convenience
 savefig([file1,file_middle,file2,'rotatedtraj.fig'])
 saveas(gcf,[file1,file_middle,file2,'rotatedtraj.pdf'])
+%saveAsPdf(get(gcf,'Number'),[file1,file_middle,file2,'phasespace.pdf'])
 %% Save x,y,theta,alpha1,alpha2,phi_Head,phi_Tail...
 save(file,'-append','center','phi_Body','phi_Head','phi_Tail','alpha1','alpha2','b1','b2','b3','b4','b5','b6')
 
